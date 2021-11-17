@@ -43,13 +43,13 @@ Betting determines the amount of the payout for the types of hands you have. Typ
 
 ### Codebase Needs for Video Poker #TODO
 Based on my limited understanding of the rules of video poker, it looks like I will need code that accomplishes the following:
-- [ ] A deck of 52 cards with random five-card initial draw
+- [x] A deck of 52 cards with random five-card initial draw
 - [ ] A hierarchy of winning combinations
 - [ ] A payoff table that calculates winnings for a player given their bet and their hand (based on the payoff table described and linked above)
 - [ ] A betting function for the player to wager a given number of coins (using the `input()` function in python)
 - [ ] A method for tallying the player's current winnings/bankroll
 - [ ] A function for determining whether the player has a winning hand or not
-- [ ] Extra: a visual representation of the cards in the player's hand 
+- [x] Extra: a visual representation of the cards in the player's hand 
 
 ### Building a Deck of Cards with OO Python
 I found this [really nifty blog post](https://medium.com/@anthonytapias/build-a-deck-of-cards-with-oo-python-c41913a744d3) on creating a deck of cards using three classes in Python. I used this methodology to build out the deck of cards for my Video Poker game. 
