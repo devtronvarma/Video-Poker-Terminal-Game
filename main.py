@@ -22,10 +22,10 @@ class Card:
         8: 8,
         9: 9,
         10: 10,
-        'Jack': 10,
-        'Queen': 10,
-        'King': 10,
-        'Ace': 11
+        'Jack': 11,
+        'Queen': 12,
+        'King': 13,
+        'Ace': 14
     }
 
     def __init__(self, suit, rank):
@@ -37,6 +37,7 @@ class Card:
         self.rank = rank
         self.points = self.card_values[rank]
 
+# Function to output ascii version of the cards in a hand in the terminal
 def ascii_version_of_card(*cards, return_string=True):
     """
     Instead of a boring text version of the card we render an ASCII image of the card.
@@ -84,6 +85,7 @@ def ascii_version_of_card(*cards, return_string=True):
     else:
         return result
 
+# Define Deck class 
 class Deck:
     
     def __init__(self):
@@ -120,7 +122,7 @@ class Player:
         self.bankroll = 20
 
     # method for initial two-card draw
-    def initial_draw(self, deck):
+    def draw_cards(self, deck):
         for i in range(5):
             self.hand.append(deck.draw_card())
         return self
@@ -132,35 +134,91 @@ class Player:
                 self.hand[1],
                 self.hand[2],
                 self.hand[3],
-                self.hand[4]        ))
+                self.hand[4]))
 
     # method for placing a bet
     def bet(self):
-        self.bet_size = input("Bet size: $") 
-        print("You bet ${}.".format(self.bet_size))
+        self.bet_size = input("How many coins would you like to bet? (Max: 5)\n") 
+        print("You bet {} coins.".format(self.bet_size))
 
     # method for selecting cards to redraw
     def redraw(self):
         redraw_yn = input("Do you want to redraw any cards? Y/N \n").capitalize()
         if redraw_yn == "Y":
-            redraw_list = input("Which cards do you want to redraw? (Use commas to separate) \n").split(',')
-            
-            # convert user input into list of integers (for indexing player's hand)
-            for i in range(len(redraw_list)):
-                redraw_list[i] = int(redraw_list[i]) - 1
-                
+            redraw_num = int(input("How many cards do you want to redraw?\n"))
+            if redraw_num > 1:
+                redraw_list = [int(x) - 1 for x in input("Which cards do you want to redraw? (Use commas to separate) \n").split(',')]
                 for i in redraw_list:
-                    self.hand[redraw_list[i]] = (deck.draw_card())
+                    self.hand[i] = deck.draw_card()    
+            else:
+                redraw_index = int(input("Which card do you want to redraw? \n")) - 1
+                self.hand[redraw_index] = deck.draw_card()
 
             # print new hand
             print("Your hand is now: \n")
             self.show_hand()        
 
+# Define Hierarchy of Hands
+# Function to determine flush
+def is_flush(hand):
+    return all(x.suit == hand[0].suit for x in hand)
 
-deck = Deck()
-deck.shuffle()
+# def is_straight(hand):
+        # sorted_hand = sorted(hand)
+        # for i in range(len(hand)):
+        #     hand[i + 1].rank == hand[i].rank + 1 for i in hand
 
-player = Player()
-player.initial_draw(deck)
-player.show_hand()
-player.redraw()
+
+# Testing Functionality
+# deck = Deck()
+# deck.shuffle()
+
+# player = Player()
+# player.draw_cards(deck)
+# player.show_hand()
+# player.redraw()
+
+# Create function to score hand
+def score_hand(hand):
+    points = sorted([hand[i].points for i in range(5)])
+    suits = [hand[i].suit for i in range(5)]
+    points_repeat = [points.count(i) for i in points]
+    suits_repeat = [suits.count(i) for i in suits]
+    diff = max(points) - min(points)
+
+    # return points_repeat 
+
+    if 5 in suits_repeat:
+        if points == [10, 11, 12, 13, 14]: #find royal flush
+            return "Royal Flush"
+        elif diff == 4 and max(points_repeat) == 1: # find straight flush w/o ace low
+            return "Straight Flush"
+        elif diff == 12 and points[4] == 14: # find straight flush w/ace low
+            check = 0
+            for i in range(1, 4):
+                check += points[i] - points[i - 1]
+            if check == 3:
+                return "Straight Flush"
+            else:
+                return "Flush"
+        else:
+            return "Flush"
+    elif sorted(points_repeat) == [2,2,3,3,3]: # find full house
+        return "Full House"
+    elif 4 in points_repeat: # find four of a kind
+        return "Four of a Kind"
+    elif 3 in points_repeat: # find three of a kind
+        return "Three of a Kind"
+    elif points_repeat.count(2) == 4: # find two-pair
+        return "Two Pair"
+    elif diff == 4 and max(points_repeat) == 1: # find straight w/o ace low
+            return "Straight"
+    elif diff == 12 and points[4] == 14: # find straight w/ace low
+        check = 0
+        for i in range(1, 4):
+            check += points[i] - points[i - 1]
+        if check == 3:
+            return "Straight"
+
+print(score_hand(hand))
+

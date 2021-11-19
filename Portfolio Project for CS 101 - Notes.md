@@ -46,12 +46,17 @@ Based on my limited understanding of the rules of video poker, it looks like I w
 - [x] A deck of 52 cards with random five-card initial draw
 - [ ] A hierarchy of winning combinations
 - [ ] A payoff table that calculates winnings for a player given their bet and their hand (based on the payoff table described and linked above)
-- [ ] A betting function for the player to wager a given number of coins (using the `input()` function in python)
+- [x] A betting function for the player to wager a given number of coins (using the `input()` function in python)
 - [ ] A method for tallying the player's current winnings/bankroll
-- [ ] A function for determining whether the player has a winning hand or not
 - [x] Extra: a visual representation of the cards in the player's hand 
 
 ### Building a Deck of Cards with OO Python
 I found this [really nifty blog post](https://medium.com/@anthonytapias/build-a-deck-of-cards-with-oo-python-c41913a744d3) on creating a deck of cards using three classes in Python. I used this methodology to build out the deck of cards for my Video Poker game. 
 
 [This exchange](https://codereview.stackexchange.com/questions/82103/ascii-fication-of-playing-cards) was very helpful in thinking about how to build and display the graphical representations of the cards.
+
+
+### Ideas
+- [ ] Need to find some way to sort the hand a player is dealt by card.rank
+- [ ] Need to create a while loop (while player.bankroll > 0, play continues)
+- [ ] Need to add functionality that asks player if they want to continue playing, OR keep the number of rounds of play at some palatable number (like 10) 
