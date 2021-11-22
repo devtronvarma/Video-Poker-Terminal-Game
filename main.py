@@ -1,15 +1,9 @@
 # Import packages
 import random
-import pyfiglet
-import sys  # for showing hands horizontally
+import pyfiglet # for the game welcome message
 
-# Print Welcome Message to Kick Off Game
-welcome_msg = pyfiglet.figlet_format("WELCOME TO \n VIDEO POKER")
-# print(welcome_msg)
 
-# Define Card class
-import random
-
+# Define the Card class
 class Card:
 
     card_values = {  # value of the ace is high until it needs to be low
@@ -121,7 +115,7 @@ class Player:
         self.hand = []
         self.bankroll = 20
 
-    # method for initial two-card draw
+    # method for initial five-card draw
     def draw_cards(self, deck):
         for i in range(5):
             self.hand.append(deck.draw_card())
@@ -138,8 +132,17 @@ class Player:
 
     # method for placing a bet
     def bet(self):
-        self.bet_size = input("How many coins would you like to bet? (Max: 5)\n") 
-        print("You bet {} coins.".format(self.bet_size))
+        bet = int(input("How many coins would you like to bet? (Max: 5)\n"))
+        if bet > self.bankroll:
+            print("You can only bet the money you have. No strip poker here...")
+            self.bet_size = self.bankroll
+        elif bet > 5:
+            print("You can only bet 5 coins at most.")
+            self.bet_size = 5
+        else:
+            self.bet_size = bet
+        self.bankroll -= self.bet_size
+        print("You bet {} coins. Your current bankroll is {} coins.".format(self.bet_size, self.bankroll))
 
     # method for selecting cards to redraw
     def redraw(self):
@@ -158,67 +161,123 @@ class Player:
             print("Your hand is now: \n")
             self.show_hand()        
 
-# Define Hierarchy of Hands
-# Function to determine flush
-def is_flush(hand):
-    return all(x.suit == hand[0].suit for x in hand)
+    # method for scoring hand, calculating winnings, and outputting message
+    def score_hand(self):
+        points = sorted([self.hand[i].points for i in range(5)])
+        suits = [self.hand[i].suit for i in range(5)]
+        points_repeat = [points.count(i) for i in points]
+        suits_repeat = [suits.count(i) for i in suits]
+        diff = max(points) - min(points)
+        hand_name = ""
+        payoff = {
+            "Royal Flush": 10,
+            "Straight Flush": 9,
+            "Flush": 8,
+            "Full House": 7,
+            "Four of a Kind": 6,
+            "Three of a Kind": 5,
+            "Two Pair": 4,
+            "Straight": 3,
+            "Pair": 2,
+            "Bad Hand": -1,
+        }
 
-# def is_straight(hand):
-        # sorted_hand = sorted(hand)
-        # for i in range(len(hand)):
-        #     hand[i + 1].rank == hand[i].rank + 1 for i in hand
-
-
-# Testing Functionality
-# deck = Deck()
-# deck.shuffle()
-
-# player = Player()
-# player.draw_cards(deck)
-# player.show_hand()
-# player.redraw()
-
-# Create function to score hand
-def score_hand(hand):
-    points = sorted([hand[i].points for i in range(5)])
-    suits = [hand[i].suit for i in range(5)]
-    points_repeat = [points.count(i) for i in points]
-    suits_repeat = [suits.count(i) for i in suits]
-    diff = max(points) - min(points)
-
-    # return points_repeat 
-
-    if 5 in suits_repeat:
-        if points == [10, 11, 12, 13, 14]: #find royal flush
-            return "Royal Flush"
-        elif diff == 4 and max(points_repeat) == 1: # find straight flush w/o ace low
-            return "Straight Flush"
-        elif diff == 12 and points[4] == 14: # find straight flush w/ace low
+        if 5 in suits_repeat:
+            if points == [10, 11, 12, 13, 14]: #find royal flush
+                hand_name = "Royal Flush"
+                self.bankroll += self.bet_size * payoff[hand_name] + self.bet_size
+            elif diff == 4 and max(points_repeat) == 1: # find straight flush w/o ace low
+                hand_name = "Straight Flush"
+                self.bankroll += self.bet_size * payoff[hand_name] + self.bet_size
+            elif diff == 12 and points[4] == 14: # find straight flush w/ace low
+                check = 0
+                for i in range(1, 4):
+                    check += points[i] - points[i - 1]
+                if check == 3:
+                    hand_name =  "Straight Flush"
+                    self.bankroll += self.bet_size * payoff[hand_name] + self.bet_size
+                else:
+                    hand_name =  "Flush"
+                    self.bankroll += self.bet_size * payoff[hand_name] + self.bet_size
+            else:
+                hand_name = "Flush"
+                self.bankroll += self.bet_size * payoff[hand_name] + self.bet_size
+        elif sorted(points_repeat) == [2,2,3,3,3]: # find full house
+            hand_name = "Full House"
+            self.bankroll += self.bet_size * payoff[hand_name] + self.bet_size
+        elif 4 in points_repeat: # find four of a kind
+            hand_name = "Four of a Kind"
+            self.bankroll += self.bet_size * payoff[hand_name] + self.bet_size
+        elif 3 in points_repeat: # find three of a kind
+            hand_name = "Three of a Kind"
+            self.bankroll += self.bet_size * payoff[hand_name] + self.bet_size
+        elif points_repeat.count(2) == 4: # find two-pair
+            hand_name = "Two Pair"
+            self.bankroll += self.bet_size * payoff[hand_name] + self.bet_size
+        elif 2 in points_repeat: # find pair
+            hand_name = "Pair"
+            self.bankroll += self.bet_size * payoff[hand_name] + self.bet_size
+        elif diff == 4 and max(points_repeat) == 1: # find straight w/o ace low
+            hand_name = "Straight"
+            self.bankroll += self.bet_size * payoff[hand_name] + self.bet_size
+        elif diff == 12 and points[4] == 14: # find straight w/ace low
             check = 0
             for i in range(1, 4):
                 check += points[i] - points[i - 1]
-            if check == 3:
-                return "Straight Flush"
-            else:
-                return "Flush"
+                if check == 3:
+                    hand_name = "Straight"
+                    self.bankroll += self.bet_size * payoff[hand_name] + self.bet_size
         else:
-            return "Flush"
-    elif sorted(points_repeat) == [2,2,3,3,3]: # find full house
-        return "Full House"
-    elif 4 in points_repeat: # find four of a kind
-        return "Four of a Kind"
-    elif 3 in points_repeat: # find three of a kind
-        return "Three of a Kind"
-    elif points_repeat.count(2) == 4: # find two-pair
-        return "Two Pair"
-    elif diff == 4 and max(points_repeat) == 1: # find straight w/o ace low
-            return "Straight"
-    elif diff == 12 and points[4] == 14: # find straight w/ace low
-        check = 0
-        for i in range(1, 4):
-            check += points[i] - points[i - 1]
-        if check == 3:
-            return "Straight"
+            hand_name = "Bad Hand"
+            self.bankroll += self.bet_size * payoff[hand_name]
+        print("You have a {}. Your bankroll is now {} coins.".format(hand_name, self.bankroll))
 
-print(score_hand(hand))
+
+# Game Code below
+
+# Print Welcome Message to Kick Off Game
+welcome_msg = pyfiglet.figlet_format("WELCOME TO \n VIDEO POKER")
+rules = """
+Here are the rules of the game:
+-------------------------------
+In this terminal version of video poker, you start off with 20 coins. 
+Before you are dealt a hand, you have to decide how many coins 
+you'd like to bet. The maximum bet is 5 coins per hand. 
+With each hand, you'll have an opportunity to redraw as many cards 
+in your hand as you'd like for no additional charge. If you wind up 
+with a winning hand (anything from a pair to a royal flush), you'll 
+get your bet back and more. You will receive a prompt with each 
+hand asking if you'd like to keep going or if you'd like to stop playing.
+
+Enjoy!
+-------------------------------
+"""
+print(welcome_msg)
+print(rules)
+
+# Ask if player is ready to start
+ready_yn = input("Are you ready to play Terminal Video Poker? [Y/N]\n").capitalize()
+if ready_yn == "Y":
+    
+    print("Let's get started! Good luck!")
+
+    # Initialize shuffled Deck and Player
+    player = Player()
+
+
+    # While loop for game play #TODO: figure out how to get the deck to shuffle after each draw -- may have to embed a shuffle in one of the Player class methods
+    while player.bankroll > 0:
+        deck = Deck()
+        deck.shuffle()
+        player.bet()
+        player.draw_cards(deck)
+        player.show_hand()
+        player.redraw()
+        player.score_hand()
+
+        # Stop condition for loop 
+        stop_yn = input("Do you want to stop playing now? [Y/N]\n").capitalize() 
+        if stop_yn == "Y":
+            print("Your final winnings today were {} coins. Good luck next time!".format(player.bankroll))
+            break
 
