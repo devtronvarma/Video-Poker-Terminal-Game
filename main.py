@@ -115,13 +115,13 @@ class Player:
         self.hand = []
         self.bankroll = 20
 
-    # method for initial five-card draw
+    # Method for initial five-card draw
     def draw_cards(self, deck):
         for i in range(5):
             self.hand.append(deck.draw_card())
         return self
 
-    # method for displaying player's hand
+    # Method for displaying player's hand
     def show_hand(self):
         print(ascii_version_of_card(
                 self.hand[0],
@@ -130,7 +130,7 @@ class Player:
                 self.hand[3],
                 self.hand[4]))
 
-    # method for placing a bet
+    # Method for placing a bet
     def bet(self):
         bet = int(input("How many coins would you like to bet? (Max: 5)\n"))
         if bet > self.bankroll:
@@ -144,7 +144,7 @@ class Player:
         self.bankroll -= self.bet_size
         print("You bet {} coins. Your current bankroll is {} coins.".format(self.bet_size, self.bankroll))
 
-    # method for selecting cards to redraw
+    # Method for selecting cards to redraw
     def redraw(self):
         redraw_yn = input("Do you want to redraw any cards? Y/N \n").capitalize()
         if redraw_yn == "Y":
@@ -161,7 +161,7 @@ class Player:
             print("Your hand is now: \n")
             self.show_hand()        
 
-    # method for scoring hand, calculating winnings, and outputting message
+    # Method for scoring hand, calculating winnings, and outputting message
     def score_hand(self):
         points = sorted([self.hand[i].points for i in range(5)])
         suits = [self.hand[i].suit for i in range(5)]
@@ -227,10 +227,15 @@ class Player:
                 if check == 3:
                     hand_name = "Straight"
                     self.bankroll += self.bet_size * payoff[hand_name] + self.bet_size
-        else:
+                else:
+                    hand_name = "Bad Hand"
+                    self.bankroll += self.bet_size * payoff[hand_name]
+        else: # for everything else
             hand_name = "Bad Hand"
             self.bankroll += self.bet_size * payoff[hand_name]
+
         print("You have a {}. Your bankroll is now {} coins.".format(hand_name, self.bankroll))
+        self.hand = []
 
 
 # Game Code below
@@ -259,13 +264,14 @@ print(rules)
 ready_yn = input("Are you ready to play Terminal Video Poker? [Y/N]\n").capitalize()
 if ready_yn == "Y":
     
+    # Print start message
     print("Let's get started! Good luck!")
 
     # Initialize shuffled Deck and Player
     player = Player()
 
 
-    # While loop for game play #TODO: figure out how to get the deck to shuffle after each draw -- may have to embed a shuffle in one of the Player class methods
+    # While loop for game play 
     while player.bankroll > 0:
         deck = Deck()
         deck.shuffle()
@@ -275,9 +281,13 @@ if ready_yn == "Y":
         player.redraw()
         player.score_hand()
 
+        # Stop condition if player goes bankrupt
+        if player.bankroll == 0:
+            print("Looks like your luck has run short. Better luck next time.")
+            break
+        
         # Stop condition for loop 
         stop_yn = input("Do you want to stop playing now? [Y/N]\n").capitalize() 
         if stop_yn == "Y":
             print("Your final winnings today were {} coins. Good luck next time!".format(player.bankroll))
             break
-
